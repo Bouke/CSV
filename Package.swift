@@ -3,6 +3,6 @@ import PackageDescription
 let package = Package(
     name: "CSV",
     dependencies: [
-                      .Package(url: "../CCSV", majorVersion: 1)
+        .Package(url: "https://github.com/Bouke/CCSV.git", majorVersion: 1),
     ]
 )
