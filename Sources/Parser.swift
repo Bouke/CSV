@@ -1,5 +1,5 @@
-import CCSV
 import Foundation
+import CLibCSV
 
 private func cb1(bytes: UnsafeMutablePointer<Void>?, length: Int, context: UnsafeMutablePointer<Void>?) {
     guard let context = context else { abort() }
