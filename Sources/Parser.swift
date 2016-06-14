@@ -34,7 +34,7 @@ public class Parser {
 
     public init() {
         parser = csv_parser()
-        assert(csv_init(&parser, UInt8(CSV_APPEND_NULL)) == 0)
+        precondition(csv_init(&parser, UInt8(CSV_APPEND_NULL)) == 0)
     }
 
     deinit { csv_free(&parser) }
