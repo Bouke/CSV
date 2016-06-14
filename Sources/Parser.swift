@@ -63,7 +63,7 @@ public class Parser {
     public func parse(data: NSData) throws {
         let context = bridge(self)
         guard csv_parse(&parser, data.bytes, data.length, cb1, cb2, UnsafeMutablePointer(context)) == data.length else {
-            throw Error.ReadError
+            throw Error(error: csv_error(&parser))
         }
         csv_fini(&parser, cb1, cb2, UnsafeMutablePointer(context))
     }
