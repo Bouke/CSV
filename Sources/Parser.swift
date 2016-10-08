@@ -1,27 +1,26 @@
 import Foundation
 import CLibCSV
 
-private func cb1(bytes: UnsafeMutablePointer<Void>?, length: Int, context: UnsafeMutablePointer<Void>?) {
+private func cb1(bytes: UnsafeMutableRawPointer?, length: Int, context: UnsafeMutableRawPointer?) {
     guard let context = context else { abort() }
-    let parser: Parser = bridge(context)
+    let parser = Unmanaged<Parser>.fromOpaque(context).takeUnretainedValue()
     guard let didReadField = parser.didReadField else { return }
 
-    guard let bytes = bytes else { abort() }
-    guard let string = String(validatingUTF8: UnsafePointer(bytes)) else { abort() }
-
+    guard let bytes = bytes?.bindMemory(to: CChar.self, capacity: length) else { abort() }
+    let string = String(cString: bytes)
     didReadField(string)
 }
 
 
-private func cb2(char: Int32, context: UnsafeMutablePointer<Void>?) -> Void {
+private func cb2(char: Int32, context: UnsafeMutableRawPointer?) -> Void {
     guard let context = context else { abort() }
-    let parser: Parser = bridge(context)
+    let parser = Unmanaged<Parser>.fromOpaque(context).takeUnretainedValue()
     guard let didReadRow = parser.didReadRow else { return }
 
     let character: Character?
     switch char {
     case -1: character = nil
-    default: character = Character(UnicodeScalar(Int(char)))
+    default: character = Character(UnicodeScalar(Int(char))!)
     }
 
     didReadRow(character)
@@ -60,11 +59,13 @@ public class Parser {
     public var didReadField: ((String) -> ())?
     public var didReadRow: ((Character?) -> ())?
 
-    public func parse(data: NSData) throws {
-        let context = bridge(self)
-        guard csv_parse(&parser, data.bytes, data.length, cb1, cb2, UnsafeMutablePointer(context)) == data.length else {
-            throw Error(error: csv_error(&parser))
+    public func parse(data: Data) throws {
+        let context = Unmanaged.passUnretained(self).toOpaque()
+        try data.withUnsafeBytes { (bytes: UnsafePointer<CChar>) -> () in
+            guard csv_parse(&parser, UnsafeRawPointer(bytes), data.count, cb1, cb2, context) == data.count else {
+                throw CSVError(error: csv_error(&parser))
+            }
+            csv_fini(&parser, cb1, cb2, context)
         }
-        csv_fini(&parser, cb1, cb2, UnsafeMutablePointer(context))
     }
 }

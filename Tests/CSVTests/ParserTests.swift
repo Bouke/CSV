@@ -4,34 +4,34 @@ import XCTest
 class ParserTests: XCTestCase {
     func test_defaults() throws {
         let csv = "hello,world\nhello,gib\n"
-        guard let data = csv.data(using: NSUTF8StringEncoding) else { XCTFail(); return }
+        guard let data = csv.data(using: .utf8) else { XCTFail(); return }
         let output = try collect(parser: Parser(), data: data)
-        XCTAssertEqual(output, [["hello", "world"], ["hello", "gib"]])
+        XCTAssert(output == [["hello", "world"], ["hello", "gib"]])
     }
 
     func test_semicolon_delimiter() throws {
         let csv = "hello;world\nhello;gib\n"
-        guard let data = csv.data(using: NSUTF8StringEncoding) else { XCTFail(); return }
+        guard let data = csv.data(using: .utf8) else { XCTFail(); return }
         let parser = Parser()
         parser.delimiter = ";"
         let output = try collect(parser: parser, data: data)
-        XCTAssertEqual(output, [["hello", "world"], ["hello", "gib"]])
+        XCTAssert(output == [["hello", "world"], ["hello", "gib"]])
     }
 
     func test_tab_delimiter() throws {
         let csv = "hello\tworld\nhello\tgib\n"
-        guard let data = csv.data(using: NSUTF8StringEncoding) else { XCTFail(); return }
+        guard let data = csv.data(using: .utf8) else { XCTFail(); return }
         let parser = Parser()
         parser.delimiter = "\t"
         let output = try collect(parser: parser, data: data)
-        XCTAssertEqual(output, [["hello", "world"], ["hello", "gib"]])
+        XCTAssert(output == [["hello", "world"], ["hello", "gib"]])
     }
 
     func test_quoted() throws {
         let csv = "contains \"quotes\",\"\"quoted text\"\""
-        guard let data = csv.data(using: NSUTF8StringEncoding) else { XCTFail(); return }
+        guard let data = csv.data(using: .utf8) else { XCTFail(); return }
         let output = try collect(parser: Parser(), data: data)
-        XCTAssertEqual(output, [["contains \"quotes\"", "\"quoted text\""]])
+        XCTAssert(output == [["contains \"quotes\"", "\"quoted text\""]])
     }
 }
 
@@ -46,7 +46,8 @@ extension ParserTests {
     }
 }
 
-func collect(parser: Parser, data: NSData) throws -> [[String]] {
+
+func collect(parser: Parser, data: Data) throws -> [[String]] {
     var rows = [[String]]()
     var row = [String]()
     parser.didReadField = { row.append($0) }

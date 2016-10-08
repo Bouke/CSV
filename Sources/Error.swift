@@ -1,6 +1,6 @@
 import CLibCSV
 
-public enum Error: ErrorProtocol {
+public enum CSVError: Error {
     case parse
     case noMem
     case tooBig
